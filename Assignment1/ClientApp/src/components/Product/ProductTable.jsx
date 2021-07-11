@@ -2,11 +2,14 @@ import axios from 'axios';
 import React, { Component, useState } from 'react';
 import { Button, Table } from 'semantic-ui-react';
 import EditProduct from './EditProduct';
+import DeleteModal from '../ShareComponents/DeleteModal';
 
 const ProductTable = (props) => {
   const { products, fetchProduct } = props;
   const [open, setOpen] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState();
+  const [selectedId, setSelectedId] = useState();
 
   //function editCustomer(id) {}
 
@@ -25,6 +28,11 @@ const ProductTable = (props) => {
     product ? setSelectedProduct(product) : console.log('nothing');
   };
 
+  const toggleDeleteModal = (value, productId) => {
+    setOpenDeleteModal(value);
+    productId ? setSelectedId(productId) : console.log('nothing');
+  };
+
   return (
     <div>
       <EditProduct
@@ -32,6 +40,13 @@ const ProductTable = (props) => {
         open={open}
         fetchProduct={fetchProduct}
         selectedProduct={selectedProduct}
+      />
+      <DeleteModal
+        toggleDeleteModal={toggleDeleteModal}
+        open={openDeleteModal}
+        fetchData={fetchProduct}
+        deleteSelectedItem={deleteProduct}
+        selectedId={selectedId}
       />
       <Table celled>
         <Table.Header>
@@ -63,7 +78,7 @@ const ProductTable = (props) => {
                 <Button
                   inverted
                   color='red'
-                  onClick={() => deleteProduct(product.id)}
+                  onClick={() => toggleDeleteModal(true, product.id)}
                 >
                   Delete
                 </Button>
