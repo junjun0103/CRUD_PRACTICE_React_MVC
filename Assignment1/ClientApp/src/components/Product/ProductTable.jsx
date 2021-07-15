@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { Component, useState } from 'react';
 import { Button, Table } from 'semantic-ui-react';
-import EditProduct from './EditProduct';
+import EditProduct from './ModalForProductComponent';
 import DeleteModal from '../ShareComponents/DeleteModal';
 
 const ProductTable = (props) => {
@@ -39,6 +39,7 @@ const ProductTable = (props) => {
         toggleCreateModal={toggleCreateModal}
         open={open}
         fetchProduct={fetchProduct}
+        modalFor='edit'
         selectedProduct={selectedProduct}
       />
       <DeleteModal

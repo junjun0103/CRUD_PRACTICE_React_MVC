@@ -2,42 +2,68 @@ import React, { useState, useEffect } from 'react';
 import { Button, Form, Modal } from 'semantic-ui-react';
 import axios from 'axios';
 
-const CreateCustomer = (props) => {
-  const [name, setName] = useState();
-  const [address, setAddress] = useState();
+const ModalForCustomerComponent = (props) => {
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
   const [nameEmpty, setNameEmpty] = useState(false);
   const [addressEmpty, setAddressEmpty] = useState(false);
   const [nameSpecial, setNameSpecial] = useState(false);
 
   console.log('createCustomer modal');
 
-  const { open, toggleCreateModal, fetchCustomer } = props;
+  const { open, toggleCreateModal, fetchCustomer, modalFor, selectedCustomer } =
+    props;
   const pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
 
+  useEffect(() => {
+    if (selectedCustomer) {
+      setName(selectedCustomer.name);
+      setAddress(selectedCustomer.address);
+    }
+  }, [selectedCustomer]);
+
   const createCustomer = () => {
-    if (name && address) {
+    if (name.trim() && address.trim()) {
       if (pattern_spc.test(name)) {
         setNameSpecial(true);
       } else {
-        axios
-          .post('/customers/PostCustomer', {
-            name: name,
-            address: address,
-          })
-          .then((res) => {
-            console.log(res.data);
-            fetchCustomer();
-            toggleCreateModal(false);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+        if (modalFor === 'create') {
+          axios
+            .post('/customers/PostCustomer', {
+              name: name.trim(),
+              address: address.trim(),
+            })
+            .then((res) => {
+              console.log(res.data);
+              fetchCustomer();
+              toggleCreateModal(false);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else if (modalFor === 'edit') {
+          axios
+            .put(`/customers/PutCustomer/${selectedCustomer.id}`, {
+              id: selectedCustomer.id,
+              name: name,
+              address: address,
+            })
+            .then((res) => {
+              console.log(res.data);
+              fetchCustomer();
+              toggleCreateModal(false);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
+        resetStates();
       }
     } else {
-      if (!name) {
+      if (!name.trim()) {
         setNameEmpty(true);
       }
-      if (!address) {
+      if (!address.trim()) {
         setAddressEmpty(true);
       }
     }
@@ -53,6 +79,11 @@ const CreateCustomer = (props) => {
     setAddressEmpty(false);
   };
 
+  const resetStates = () => {
+    setName('');
+    setAddress('');
+  };
+
   return (
     <Modal open={open}>
       <Modal.Header>Create Customer</Modal.Header>
@@ -62,6 +93,7 @@ const CreateCustomer = (props) => {
             <label>Name</label>
             <input
               placeholder='Name'
+              value={name ? name : ''}
               onChange={(e) => setCustomerName(e.target.value)}
             />
             <span>{nameEmpty ? 'Please Enter Name' : ''}</span>
@@ -73,6 +105,7 @@ const CreateCustomer = (props) => {
             <label>Address</label>
             <input
               placeholder='Address'
+              value={address ? address : ''}
               onChange={(e) => setCustomerAddress(e.target.value)}
             />
             <span>{addressEmpty ? 'Please Enter Address' : ''}</span>
@@ -91,4 +124,4 @@ const CreateCustomer = (props) => {
   );
 };
 
-export default CreateCustomer;
+export default ModalForCustomerComponent;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Form, Modal } from 'semantic-ui-react';
 import axios from 'axios';
 
-const CreateStore = (props) => {
+const ModalForStoreComponent = (props) => {
   const [name, setName] = useState();
   const [address, setAddress] = useState();
   const [nameEmpty, setNameEmpty] = useState(false);
@@ -11,33 +11,59 @@ const CreateStore = (props) => {
 
   console.log('createStore modal');
 
-  const { open, toggleCreateModal, fetchStore } = props;
+  const { open, toggleCreateModal, fetchStore, modalFor, selectedStore } =
+    props;
   const pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
 
+  useEffect(() => {
+    if (selectedStore) {
+      setName(selectedStore.name);
+      setAddress(selectedStore.address);
+    }
+  }, [selectedStore]);
+
   const createStore = () => {
-    if (name && address) {
+    if (name.trim() && address.trim()) {
       if (pattern_spc.test(name)) {
         setNameSpecial(true);
       } else {
-        axios
-          .post('/stores/PostStore', {
-            name: name,
-            address: address,
-          })
-          .then((res) => {
-            console.log(res.data);
-            fetchStore();
-            toggleCreateModal(false);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+        if (modalFor === 'create') {
+          axios
+            .post('/stores/PostStore', {
+              name: name.trim(),
+              address: address.trim(),
+            })
+            .then((res) => {
+              console.log(res.data);
+              fetchStore();
+              toggleCreateModal(false);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else if (modalFor === 'edit') {
+          axios
+            .put(`/Stores/PutStore/${selectedStore.id}`, {
+              id: selectedStore.id,
+              name: name.trim(),
+              address: address.trim(),
+            })
+            .then((res) => {
+              console.log(res.data);
+              fetchStore();
+              toggleCreateModal(false);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
+        resetStates();
       }
     } else {
-      if (!name) {
+      if (!name.trim()) {
         setNameEmpty(true);
       }
-      if (!address) {
+      if (!address.trim()) {
         setAddressEmpty(true);
       }
     }
@@ -53,6 +79,11 @@ const CreateStore = (props) => {
     setAddressEmpty(false);
   };
 
+  const resetStates = () => {
+    setName('');
+    setAddress('');
+  };
+
   return (
     <Modal open={open}>
       <Modal.Header>Create Store</Modal.Header>
@@ -62,6 +93,7 @@ const CreateStore = (props) => {
             <label>Name</label>
             <input
               placeholder='Name'
+              value={name ? name : ''}
               onChange={(e) => setStoreName(e.target.value)}
             />
             <span>{nameEmpty ? 'Please Enter Name' : ''}</span>
@@ -73,6 +105,7 @@ const CreateStore = (props) => {
             <label>Address</label>
             <input
               placeholder='Address'
+              value={address ? address : ''}
               onChange={(e) => setStoreAddress(e.target.value)}
             />
             <span>{addressEmpty ? 'Please Enter Address' : ''}</span>
@@ -91,4 +124,4 @@ const CreateStore = (props) => {
   );
 };
 
-export default CreateStore;
+export default ModalForStoreComponent;

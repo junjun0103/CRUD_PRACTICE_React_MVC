@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { Component } from 'react';
 import { Button } from 'semantic-ui-react';
 import StoreTable from './StoreTable';
-import CreateStore from './CreateStore';
+import CreateStore from './ModalForStoreComponent';
 
 export class Store extends Component {
   constructor(props) {
@@ -44,6 +44,7 @@ export class Store extends Component {
           toggleCreateModal={this.toggleCreateModal}
           open={open}
           fetchStore={this.fetchStore}
+          modalFor='create'
         />
         <h1>Stores</h1>
         <Button

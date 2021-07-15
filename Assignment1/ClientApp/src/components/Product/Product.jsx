@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { Component } from 'react';
 import { Button } from 'semantic-ui-react';
 import ProductTable from './ProductTable';
-import CreateProduct from './CreateProduct';
+import CreateProduct from './ModalForProductComponent';
 
 export class Product extends Component {
   constructor(props) {
@@ -44,6 +44,7 @@ export class Product extends Component {
           toggleCreateModal={this.toggleCreateModal}
           open={open}
           fetchProduct={this.fetchProduct}
+          modalFor='create'
         />
         <h1>Products</h1>
         <Button

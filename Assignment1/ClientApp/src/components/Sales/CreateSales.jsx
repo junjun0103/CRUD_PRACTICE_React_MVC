@@ -23,14 +23,14 @@ export default class CreateSales extends Component {
         text: pro.name,
       };
     });
-    const customerOptions = stores.map((cus) => {
+    const customerOptions = customers.map((cus) => {
       return {
         key: cus.id,
         value: cus.id,
         text: cus.name,
       };
     });
-    const storeOptions = customers.map((sto) => {
+    const storeOptions = stores.map((sto) => {
       return {
         key: sto.id,
         value: sto.id,

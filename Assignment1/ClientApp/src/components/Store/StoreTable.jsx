@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import { Button, Table } from 'semantic-ui-react';
-import EditStore from './EditStore';
+import EditStore from './ModalForStoreComponent';
 import DeleteModal from '../ShareComponents/DeleteModal';
 
 const StoreTable = (props) => {
@@ -38,6 +38,7 @@ const StoreTable = (props) => {
         toggleCreateModal={toggleCreateModal}
         open={open}
         fetchStore={fetchStore}
+        modalFor='edit'
         selectedStore={selectedStore}
       />
       <DeleteModal

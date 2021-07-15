@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Form, Modal } from 'semantic-ui-react';
 import axios from 'axios';
 
-const CreateProduct = (props) => {
+const ModalForProductComponent = (props) => {
   const [name, setName] = useState();
   const [price, setPrice] = useState();
   const [nameEmpty, setNameEmpty] = useState(false);
@@ -11,33 +11,59 @@ const CreateProduct = (props) => {
 
   console.log('createProduct modal');
 
-  const { open, toggleCreateModal, fetchProduct } = props;
+  const { open, toggleCreateModal, fetchProduct, modalFor, selectedProduct } =
+    props;
   const pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
 
+  useEffect(() => {
+    if (selectedProduct) {
+      setName(selectedProduct.name);
+      setPrice(selectedProduct.price);
+    }
+  }, [selectedProduct]);
+
   const createProduct = () => {
-    if (name && price) {
+    if (name.trim() && price) {
       if (pattern_spc.test(name)) {
         setNameSpecial(true);
       } else {
-        axios
-          .post('/products/PostProduct', {
-            name: name,
-            price: Number(price),
-          })
-          .then((res) => {
-            console.log(res.data);
-            fetchProduct();
-            toggleCreateModal(false);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+        if (modalFor === 'create') {
+          axios
+            .post('/products/PostProduct', {
+              name: name.trim(),
+              price: Number(price),
+            })
+            .then((res) => {
+              console.log(res.data);
+              fetchProduct();
+              toggleCreateModal(false);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else if (modalFor === 'edit') {
+          axios
+            .put(`/products/PutProduct/${selectedProduct.id}`, {
+              id: selectedProduct.id,
+              name: name.trim(),
+              price: Number(price),
+            })
+            .then((res) => {
+              console.log(res.data);
+              fetchProduct();
+              toggleCreateModal(false);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
+        resetStates();
       }
     } else {
-      if (!name) {
+      if (!name.trim()) {
         setNameEmpty(true);
       }
-      if (!price) {
+      if (!price.trim()) {
         setPriceEmpty(true);
       }
     }
@@ -47,9 +73,14 @@ const CreateProduct = (props) => {
     setNameEmpty(false);
   };
 
-  const setProductAddress = (e) => {
+  const setProductPrice = (e) => {
     setPrice(e);
     setPriceEmpty(false);
+  };
+
+  const resetStates = () => {
+    setName('');
+    setPrice('');
   };
 
   return (
@@ -61,6 +92,7 @@ const CreateProduct = (props) => {
             <label>Name</label>
             <input
               placeholder='Name'
+              value={name ? name : ''}
               onChange={(e) => setProductName(e.target.value)}
             />
             <span>{nameEmpty ? 'Please Enter Name' : ''}</span>
@@ -72,7 +104,8 @@ const CreateProduct = (props) => {
             <label>Price</label>
             <input
               placeholder='Price'
-              onChange={(e) => setProductAddress(e.target.value)}
+              value={price ? price : ''}
+              onChange={(e) => setProductPrice(e.target.value)}
             />
             <span>{priceEmpty ? 'Please Enter Price' : ''}</span>
           </Form.Field>
@@ -90,4 +123,4 @@ const CreateProduct = (props) => {
   );
 };
 
-export default CreateProduct;
+export default ModalForProductComponent;
