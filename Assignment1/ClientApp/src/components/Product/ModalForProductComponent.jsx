@@ -5,16 +5,18 @@ import axios from 'axios';
 const ModalForProductComponent = (props) => {
   const [name, setName] = useState();
   const [price, setPrice] = useState();
+  // for valiadation
   const [nameEmpty, setNameEmpty] = useState(false);
-  const [priceEmpty, setPriceEmpty] = useState(false);
+  const [nameNumber, setNameNumber] = useState(false);
   const [nameSpecial, setNameSpecial] = useState(false);
+  const [priceSpecial, setPriceSpecial] = useState(false);
+  const [priceEmpty, setPriceEmpty] = useState(false);
 
   console.log('createProduct modal');
 
   const { open, toggleCreateModal, fetchProduct, modalFor, selectedProduct } =
     props;
-  const pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
-
+ 
   useEffect(() => {
     if (selectedProduct) {
       setName(selectedProduct.name);
@@ -22,27 +24,57 @@ const ModalForProductComponent = (props) => {
     }
   }, [selectedProduct]);
 
+  const IsEmpty = (el)=>{
+    if(el.length<1){
+      return true;
+    }
+    return false;
+  }
+  const IsNumber = (el)=>{
+    let arr = el.split('');
+    for(let temp of arr){
+      if(!isNaN(temp)){
+        return true;
+      }
+    }
+    return false;
+  }
+  const IsSpecialCaractor = (el)=>{
+    const pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
+    if(pattern_spc.test(el)){
+      return true;
+    }
+    return false;
+  } 
   const createProduct = () => {
-    if (name.trim() && price) {
-      if (pattern_spc.test(name)) {
-        setNameSpecial(true);
-      } else {
-        if (modalFor === 'create') {
-          axios
-            .post('/products/PostProduct', {
-              name: name.trim(),
-              price: Number(price),
-            })
-            .then((res) => {
-              console.log(res.data);
-              fetchProduct();
-              toggleCreateModal(false);
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        } else if (modalFor === 'edit') {
-          axios
+    resetValidatorStates();
+    if(IsEmpty(name.trim())||IsEmpty(price.trim())){
+      setNameEmpty(IsEmpty(name.trim()));
+      setPriceEmpty(IsEmpty(price.trim()));
+    }else if(IsSpecialCaractor(name.trim())||IsSpecialCaractor(price.trim())){
+      setPriceSpecial(IsSpecialCaractor(price.trim()));
+      setNameSpecial(IsSpecialCaractor(name.trim()));
+    }else if(IsNumber(name.trim())){
+      setNameNumber(IsNumber(name.trim()));
+    }else{
+      console.log(nameEmpty +'&&'+ priceEmpty +'&&'+ nameSpecial +'&&'+ priceSpecial +'&&'+ nameNumber);
+      if (modalFor === 'create') {
+        axios
+        .post('/products/PostProduct', {
+          name: name.trim(),
+          price: Number(price),
+        })
+        .then((res) => {
+          console.log(res.data);
+          fetchProduct();
+          toggleCreateModal(false);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+        console.log('create!!');
+      } else if (modalFor === 'edit') {
+        axios
             .put(`/products/PutProduct/${selectedProduct.id}`, {
               id: selectedProduct.id,
               name: name.trim(),
@@ -56,18 +88,13 @@ const ModalForProductComponent = (props) => {
             .catch((err) => {
               console.log(err);
             });
-        }
-        resetStates();
+        console.log('edit!!');
       }
-    } else {
-      if (!name.trim()) {
-        setNameEmpty(true);
-      }
-      if (!price.trim()) {
-        setPriceEmpty(true);
-      }
+      resetStates();
+      resetValidatorStates();
     }
   };
+
   const setProductName = (e) => {
     setName(e);
     setNameEmpty(false);
@@ -82,6 +109,13 @@ const ModalForProductComponent = (props) => {
     setName('');
     setPrice('');
   };
+  const resetValidatorStates = () => {
+    setNameEmpty(false);
+    setNameSpecial(false);
+    setNameNumber(false);
+    setPriceEmpty(false);
+    setPriceSpecial(false);
+  };
 
   return (
     <Modal open={open}>
@@ -95,24 +129,28 @@ const ModalForProductComponent = (props) => {
               value={name ? name : ''}
               onChange={(e) => setProductName(e.target.value)}
             />
-            <span>{nameEmpty ? 'Please Enter Name' : ''}</span>
-            <span>
+            <span className='validator'>{nameEmpty ? 'Please Enter Name' : ''}</span>
+            <span className='validator'>
               {nameSpecial ? 'Must not contain special characters' : ''}
+            </span>
+            <span className='validator'>
+              {nameNumber ? 'Must not contain Number' : ''}
             </span>
           </Form.Field>
           <Form.Field>
             <label>Price</label>
             <input
+              type='number'
               placeholder='Price'
               value={price ? price : ''}
               onChange={(e) => setProductPrice(e.target.value)}
             />
-            <span>{priceEmpty ? 'Please Enter Price' : ''}</span>
+            <span className='validator'>{priceEmpty ? 'Please Enter Price' : ''}</span>
           </Form.Field>
         </Form>
       </Modal.Content>
       <Modal.Actions>
-        <Button color='black' onClick={() => toggleCreateModal(false)}>
+        <Button color='black' onClick={() => {toggleCreateModal(false);resetStates(); resetValidatorStates();}}>
           Cancel
         </Button>
         <Button color='blue' onClick={() => createProduct()}>

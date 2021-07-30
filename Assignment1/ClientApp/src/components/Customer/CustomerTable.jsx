@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { Component, useState } from 'react';
-import { Button, Table } from 'semantic-ui-react';
+import { Button, Table, Select } from 'semantic-ui-react';
 import EditCustomer from './ModalForCustomerComponent';
 import DeleteModal from '../ShareComponents/DeleteModal';
 
@@ -10,9 +10,10 @@ const CustomerTable = (props) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState();
   const [selectedId, setSelectedId] = useState();
+  const [rowNumber, setRowNumber] = useState(3);
 
-  //function editCustomer(id) {}
 
+ 
   function deleteCustomer(id) {
     axios
       .delete(`/customers/DeleteCustomer/${id}`)
@@ -32,6 +33,11 @@ const CustomerTable = (props) => {
     setOpenDeleteModal(value);
     customerId ? setSelectedId(customerId) : console.log('nothing');
   };
+
+  const rowNumberOptions=[
+    { key: 3, text: 3, value: 3 },
+    { key: 5, text: 5, value: 5 },
+  ]
 
   return (
     <div>
@@ -90,6 +96,13 @@ const CustomerTable = (props) => {
           ))}
         </Table.Body>
       </Table>
+      <Select
+          onChange={(e, data) =>
+            setRowNumber(data.value)
+          }
+          placeholder='3'
+          options={rowNumberOptions}
+        />
     </div>
   );
 };

@@ -5,16 +5,18 @@ import axios from 'axios';
 const ModalForCustomerComponent = (props) => {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  // for valiadation
   const [nameEmpty, setNameEmpty] = useState(false);
-  const [addressEmpty, setAddressEmpty] = useState(false);
+  const [nameNumber, setNameNumber] = useState(false);
   const [nameSpecial, setNameSpecial] = useState(false);
+  const [addressSpecial, setAddressSpecial] = useState(false);
+  const [addressEmpty, setAddressEmpty] = useState(false);
 
   console.log('createCustomer modal');
 
   const { open, toggleCreateModal, fetchCustomer, modalFor, selectedCustomer } =
     props;
-  const pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
-
+  
   useEffect(() => {
     if (selectedCustomer) {
       setName(selectedCustomer.name);
@@ -22,50 +24,76 @@ const ModalForCustomerComponent = (props) => {
     }
   }, [selectedCustomer]);
 
+  const IsEmpty = (el)=>{
+    if(el.length<1){
+      return true;
+    }
+    return false;
+  }
+  const IsNumber = (el)=>{
+    let arr = el.split('');
+    for(let temp of arr){
+      if(!isNaN(temp)){
+        return true;
+      }
+    }
+    return false;
+  }
+  const IsSpecialCaractor = (el)=>{
+    const pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
+    if(pattern_spc.test(el)){
+      return true;
+    }
+    return false;
+  } 
+ 
+
   const createCustomer = () => {
-    if (name.trim() && address.trim()) {
-      if (pattern_spc.test(name)) {
-        setNameSpecial(true);
-      } else {
-        if (modalFor === 'create') {
-          axios
-            .post('/customers/PostCustomer', {
-              name: name.trim(),
-              address: address.trim(),
-            })
-            .then((res) => {
-              console.log(res.data);
-              fetchCustomer();
-              toggleCreateModal(false);
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        } else if (modalFor === 'edit') {
-          axios
-            .put(`/customers/PutCustomer/${selectedCustomer.id}`, {
-              id: selectedCustomer.id,
-              name: name,
-              address: address,
-            })
-            .then((res) => {
-              console.log(res.data);
-              fetchCustomer();
-              toggleCreateModal(false);
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        }
-        resetStates();
+    resetValidatorStates();
+    if(IsEmpty(name.trim())||IsEmpty(address.trim())){
+      setNameEmpty(IsEmpty(name.trim()));
+      setAddressEmpty(IsEmpty(address.trim()));
+    }else if(IsSpecialCaractor(name.trim())||IsSpecialCaractor(address.trim())){
+      setAddressSpecial(IsSpecialCaractor(address.trim()));
+      setNameSpecial(IsSpecialCaractor(name.trim()));
+    }else if(IsNumber(name.trim())){
+      setNameNumber(IsNumber(name.trim()));
+    }else{
+      console.log(nameEmpty +'&&'+ addressEmpty +'&&'+ nameSpecial +'&&'+ addressSpecial +'&&'+ nameNumber);
+      if (modalFor === 'create') {
+        axios
+          .post('/customers/PostCustomer', {
+            name: name.trim(),
+            address: address.trim(),
+          })
+          .then((res) => {
+            console.log(res.data);
+            fetchCustomer();
+            toggleCreateModal(false);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        console.log('create!!');
+      } else if (modalFor === 'edit') {
+        axios
+          .put(`/customers/PutCustomer/${selectedCustomer.id}`, {
+            id: selectedCustomer.id,
+            name: name,
+            address: address,
+          })
+          .then((res) => {
+            console.log(res.data);
+            fetchCustomer();
+            toggleCreateModal(false);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        console.log('edit!!');
       }
-    } else {
-      if (!name.trim()) {
-        setNameEmpty(true);
-      }
-      if (!address.trim()) {
-        setAddressEmpty(true);
-      }
+      resetStates();
+      resetValidatorStates();
     }
   };
 
@@ -83,6 +111,14 @@ const ModalForCustomerComponent = (props) => {
     setName('');
     setAddress('');
   };
+  const resetValidatorStates = () => {
+    setNameEmpty(false);
+    setNameSpecial(false);
+    setNameNumber(false);
+    setAddressEmpty(false);
+    setAddressSpecial(false);
+  };
+  
 
   return (
     <Modal open={open}>
@@ -96,9 +132,12 @@ const ModalForCustomerComponent = (props) => {
               value={name ? name : ''}
               onChange={(e) => setCustomerName(e.target.value)}
             />
-            <span>{nameEmpty ? 'Please Enter Name' : ''}</span>
-            <span>
+            <span className='validator'>{nameEmpty ? 'Please Enter Name' : ''}</span>
+            <span className='validator'>
               {nameSpecial ? 'Must not contain special characters' : ''}
+            </span>
+            <span className='validator'>
+              {nameNumber ? 'Must not contain Number' : ''}
             </span>
           </Form.Field>
           <Form.Field>
@@ -108,12 +147,12 @@ const ModalForCustomerComponent = (props) => {
               value={address ? address : ''}
               onChange={(e) => setCustomerAddress(e.target.value)}
             />
-            <span>{addressEmpty ? 'Please Enter Address' : ''}</span>
+            <span className='validator'>{addressEmpty ? 'Please Enter Address' : ''}</span>
           </Form.Field>
         </Form>
       </Modal.Content>
       <Modal.Actions>
-        <Button color='black' onClick={() => toggleCreateModal(false)}>
+        <Button color='black' onClick={() => {toggleCreateModal(false);resetStates(); resetValidatorStates();}}>
           Cancel
         </Button>
         <Button color='blue' onClick={() => createCustomer()}>

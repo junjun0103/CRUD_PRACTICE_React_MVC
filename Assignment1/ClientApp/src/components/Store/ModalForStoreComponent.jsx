@@ -3,18 +3,20 @@ import { Button, Form, Modal } from 'semantic-ui-react';
 import axios from 'axios';
 
 const ModalForStoreComponent = (props) => {
-  const [name, setName] = useState();
-  const [address, setAddress] = useState();
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+  // for valiadation
   const [nameEmpty, setNameEmpty] = useState(false);
-  const [addressEmpty, setAddressEmpty] = useState(false);
+  const [nameNumber, setNameNumber] = useState(false);
   const [nameSpecial, setNameSpecial] = useState(false);
+  const [addressSpecial, setAddressSpecial] = useState(false);
+  const [addressEmpty, setAddressEmpty] = useState(false);
 
   console.log('createStore modal');
 
   const { open, toggleCreateModal, fetchStore, modalFor, selectedStore } =
     props;
-  const pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
-
+  
   useEffect(() => {
     if (selectedStore) {
       setName(selectedStore.name);
@@ -22,13 +24,44 @@ const ModalForStoreComponent = (props) => {
     }
   }, [selectedStore]);
 
+  const IsEmpty = (el)=>{
+    if(el.length<1){
+      return true;
+    }
+    return false;
+  }
+  const IsNumber = (el)=>{
+    let arr = el.split('');
+    for(let temp of arr){
+      if(!isNaN(temp)){
+        return true;
+      }
+    }
+    return false;
+  }
+  const IsSpecialCaractor = (el)=>{
+    const pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
+    if(pattern_spc.test(el)){
+      return true;
+    }
+    return false;
+  } 
+ 
+
   const createStore = () => {
-    if (name.trim() && address.trim()) {
-      if (pattern_spc.test(name)) {
-        setNameSpecial(true);
-      } else {
-        if (modalFor === 'create') {
-          axios
+    resetValidatorStates();
+    if(IsEmpty(name.trim())||IsEmpty(address.trim())){
+      setNameEmpty(IsEmpty(name.trim()));
+      setAddressEmpty(IsEmpty(address.trim()));
+    }else if(IsSpecialCaractor(name.trim())||IsSpecialCaractor(address.trim())){
+      setAddressSpecial(IsSpecialCaractor(address.trim()));
+      setNameSpecial(IsSpecialCaractor(name.trim()));
+    }else if(IsNumber(name.trim())){
+      setNameNumber(IsNumber(name.trim()));
+    }else{
+      console.log(nameEmpty +'&&'+ addressEmpty +'&&'+ nameSpecial +'&&'+ addressSpecial +'&&'+ nameNumber);
+      if (modalFor === 'create') {
+        axios
             .post('/stores/PostStore', {
               name: name.trim(),
               address: address.trim(),
@@ -41,8 +74,9 @@ const ModalForStoreComponent = (props) => {
             .catch((err) => {
               console.log(err);
             });
-        } else if (modalFor === 'edit') {
-          axios
+        console.log('create!!');
+      } else if (modalFor === 'edit') {
+        axios
             .put(`/Stores/PutStore/${selectedStore.id}`, {
               id: selectedStore.id,
               name: name.trim(),
@@ -56,16 +90,10 @@ const ModalForStoreComponent = (props) => {
             .catch((err) => {
               console.log(err);
             });
-        }
-        resetStates();
+        console.log('edit!!');
       }
-    } else {
-      if (!name.trim()) {
-        setNameEmpty(true);
-      }
-      if (!address.trim()) {
-        setAddressEmpty(true);
-      }
+      resetStates();
+      resetValidatorStates();
     }
   };
 
@@ -83,6 +111,13 @@ const ModalForStoreComponent = (props) => {
     setName('');
     setAddress('');
   };
+  const resetValidatorStates = () => {
+    setNameEmpty(false);
+    setNameSpecial(false);
+    setNameNumber(false);
+    setAddressEmpty(false);
+    setAddressSpecial(false);
+  };
 
   return (
     <Modal open={open}>
@@ -96,9 +131,12 @@ const ModalForStoreComponent = (props) => {
               value={name ? name : ''}
               onChange={(e) => setStoreName(e.target.value)}
             />
-            <span>{nameEmpty ? 'Please Enter Name' : ''}</span>
-            <span>
+            <span className='validator'>{nameEmpty ? 'Please Enter Name' : ''}</span>
+            <span className='validator'>
               {nameSpecial ? 'Must not contain special characters' : ''}
+            </span>
+            <span className='validator'>
+              {nameNumber ? 'Must not contain Number' : ''}
             </span>
           </Form.Field>
           <Form.Field>
@@ -108,7 +146,7 @@ const ModalForStoreComponent = (props) => {
               value={address ? address : ''}
               onChange={(e) => setStoreAddress(e.target.value)}
             />
-            <span>{addressEmpty ? 'Please Enter Address' : ''}</span>
+            <span className='validator'>{addressEmpty ? 'Please Enter Address' : ''}</span>
           </Form.Field>
         </Form>
       </Modal.Content>
