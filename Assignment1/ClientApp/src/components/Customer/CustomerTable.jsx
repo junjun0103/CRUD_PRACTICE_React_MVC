@@ -10,10 +10,7 @@ const CustomerTable = (props) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState();
   const [selectedId, setSelectedId] = useState();
-  const [rowNumber, setRowNumber] = useState(3);
 
-
- 
   function deleteCustomer(id) {
     axios
       .delete(`/customers/DeleteCustomer/${id}`)
@@ -33,11 +30,6 @@ const CustomerTable = (props) => {
     setOpenDeleteModal(value);
     customerId ? setSelectedId(customerId) : console.log('nothing');
   };
-
-  const rowNumberOptions=[
-    { key: 3, text: 3, value: 3 },
-    { key: 5, text: 5, value: 5 },
-  ]
 
   return (
     <div>
@@ -96,13 +88,6 @@ const CustomerTable = (props) => {
           ))}
         </Table.Body>
       </Table>
-      <Select
-          onChange={(e, data) =>
-            setRowNumber(data.value)
-          }
-          placeholder='3'
-          options={rowNumberOptions}
-        />
     </div>
   );
 };

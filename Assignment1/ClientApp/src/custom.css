@@ -14,9 +14,9 @@ code {
   color: #e01a76;
 }
 
-.validator{
+.validator {
   font-size: 12px;
-  color:#e01a76;
+  color: #e01a76;
   display: block;
 }
 
@@ -24,4 +24,14 @@ code {
   color: #fff;
   background-color: #1b6ec2;
   border-color: #1861ac;
+}
+
+.rows__selector {
+  margin-bottom: 80px;
+}
+
+.pagination__container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
 }
