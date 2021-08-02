@@ -44,19 +44,21 @@ export class Store extends Component {
   pageHandler = (data) => {
     // console.log(data);
     let currentPage = this.state.page;
-    if (data === 'prev') {
-      if (currentPage > 1) {
-        this.setState({
-          page: currentPage - 1,
-        });
-        this.pagination(this.state.stores, currentPage - 1, this.state.rows);
-      }
-    } else if (data === 'next') {
-      if (currentPage < this.state.pages) {
-        this.setState({
-          page: currentPage + 1,
-        });
-        this.pagination(this.state.stores, currentPage + 1, this.state.rows);
+    if (this.state.rows !== 0) {
+      if (data === 'prev') {
+        if (currentPage > 1) {
+          this.setState({
+            page: currentPage - 1,
+          });
+          this.pagination(this.state.stores, currentPage - 1, this.state.rows);
+        }
+      } else if (data === 'next') {
+        if (currentPage < this.state.pages) {
+          this.setState({
+            page: currentPage + 1,
+          });
+          this.pagination(this.state.stores, currentPage + 1, this.state.rows);
+        }
       }
     }
   };
@@ -83,10 +85,11 @@ export class Store extends Component {
   };
 
   render() {
-    const { querySet, open } = this.state;
+    const { stores, querySet, open } = this.state;
     const rowsOptions = [
       { key: 3, text: 3, value: 3 },
       { key: 5, text: 5, value: 5 },
+      { key: 0, text: 'All', value: 0 },
     ];
     return (
       <div>
@@ -104,7 +107,10 @@ export class Store extends Component {
         >
           Create
         </Button>
-        <StoreTable stores={querySet} fetchStore={this.fetchStore}></StoreTable>
+        <StoreTable
+          stores={this.state.rows === 0 ? stores : querySet}
+          fetchStore={this.fetchStore}
+        ></StoreTable>
         <div className='pagination__container'>
           <Select
             className='rows__selector'

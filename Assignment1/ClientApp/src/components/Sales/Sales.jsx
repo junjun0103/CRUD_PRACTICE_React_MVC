@@ -50,19 +50,21 @@ export class Sales extends Component {
   pageHandler = (data) => {
     // console.log(data);
     let currentPage = this.state.page;
-    if (data === 'prev') {
-      if (currentPage > 1) {
-        this.setState({
-          page: currentPage - 1,
-        });
-        this.pagination(this.state.sales, currentPage - 1, this.state.rows);
-      }
-    } else if (data === 'next') {
-      if (currentPage < this.state.pages) {
-        this.setState({
-          page: currentPage + 1,
-        });
-        this.pagination(this.state.sales, currentPage + 1, this.state.rows);
+    if (this.state.rows !== 0) {
+      if (data === 'prev') {
+        if (currentPage > 1) {
+          this.setState({
+            page: currentPage - 1,
+          });
+          this.pagination(this.state.sales, currentPage - 1, this.state.rows);
+        }
+      } else if (data === 'next') {
+        if (currentPage < this.state.pages) {
+          this.setState({
+            page: currentPage + 1,
+          });
+          this.pagination(this.state.sales, currentPage + 1, this.state.rows);
+        }
       }
     }
   };
@@ -131,10 +133,11 @@ export class Sales extends Component {
   };
 
   render() {
-    const { querySet, open, customers, products, stores } = this.state;
+    const { sales, querySet, open, customers, products, stores } = this.state;
     const rowsOptions = [
       { key: 3, text: 3, value: 3 },
       { key: 5, text: 5, value: 5 },
+      { key: 0, text: 'All', value: 0 },
     ];
     return (
       <div>
@@ -155,7 +158,7 @@ export class Sales extends Component {
           Create
         </Button>
         <SalesTable
-          sales={querySet}
+          sales={this.state.rows === 0 ? sales : querySet}
           fetchSales={this.fetchSales}
           customers={customers}
           products={products}

@@ -12,6 +12,26 @@ export default class CreateSales extends Component {
       dateSold: null,
     };
   }
+  validator = () => {
+    if (
+      !this.state.productId ||
+      !this.state.customerId ||
+      !this.state.storeId ||
+      !this.state.dateSold
+    ) {
+      return false;
+    } else {
+      return true;
+    }
+  };
+  resetStates = () => {
+    this.setState({
+      productId: null,
+      customerId: null,
+      storeId: null,
+      dateSold: null,
+    });
+  };
 
   render() {
     const { open, toggleCreateModal, fetchSales, products, stores, customers } =
@@ -39,21 +59,24 @@ export default class CreateSales extends Component {
     });
 
     const createSales = () => {
-      axios
-        .post('/sales/PostSales', {
-          productId: Number(this.state.productId),
-          customerId: Number(this.state.customerId),
-          storeId: Number(this.state.storeId),
-          dateSold: this.state.dateSold,
-        })
-        .then((res) => {
-          console.log(res.data);
-          fetchSales();
-          toggleCreateModal(false);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      if (this.validator()) {
+        axios
+          .post('/sales/PostSales', {
+            productId: Number(this.state.productId),
+            customerId: Number(this.state.customerId),
+            storeId: Number(this.state.storeId),
+            dateSold: this.state.dateSold,
+          })
+          .then((res) => {
+            console.log(res.data);
+            fetchSales();
+            toggleCreateModal(false);
+            this.resetStates();
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
     };
 
     return (
@@ -72,6 +95,9 @@ export default class CreateSales extends Component {
                 placeholder='Select Product'
                 options={productOptions}
               />
+              <span className='validator'>
+                {this.state.productId ? '' : 'Please Select Product'}
+              </span>
             </Form.Field>
             <Form.Field>
               <label>Customers</label>
@@ -84,6 +110,9 @@ export default class CreateSales extends Component {
                 placeholder='Select Customer'
                 options={customerOptions}
               />
+              <span className='validator'>
+                {this.state.customerId ? '' : 'Please Select Customer'}
+              </span>
             </Form.Field>
             <Form.Field>
               <label>Stores</label>
@@ -96,6 +125,9 @@ export default class CreateSales extends Component {
                 placeholder='Select Store'
                 options={storeOptions}
               />
+              <span className='validator'>
+                {this.state.storeId ? '' : 'Please Select Store'}
+              </span>
             </Form.Field>
             <Form.Field>
               <label>DateSold</label>
@@ -106,6 +138,9 @@ export default class CreateSales extends Component {
                 type='date'
                 placeholder='DateSold'
               />
+              <span className='validator'>
+                {this.state.dateSold ? '' : 'Please Enter Date'}
+              </span>
             </Form.Field>
           </Form>
         </Modal.Content>

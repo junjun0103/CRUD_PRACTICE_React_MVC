@@ -11,12 +11,14 @@ const ModalForCustomerComponent = (props) => {
   const [nameSpecial, setNameSpecial] = useState(false);
   const [addressSpecial, setAddressSpecial] = useState(false);
   const [addressEmpty, setAddressEmpty] = useState(false);
+  const [nameValidatorStatus, setNameValidatorStatus] = useState(false);
+  const [addressValidatorStatus, setAddressValidatorStatus] = useState(false);
 
   console.log('createCustomer modal');
 
   const { open, toggleCreateModal, fetchCustomer, modalFor, selectedCustomer } =
     props;
-  
+
   useEffect(() => {
     if (selectedCustomer) {
       setName(selectedCustomer.name);
@@ -24,42 +26,58 @@ const ModalForCustomerComponent = (props) => {
     }
   }, [selectedCustomer]);
 
-  const IsEmpty = (el)=>{
-    if(el.length<1){
+  const IsEmpty = (el) => {
+    if (el.length < 1) {
       return true;
     }
     return false;
-  }
-  const IsNumber = (el)=>{
+  };
+  const IsNumber = (el) => {
     let arr = el.split('');
-    for(let temp of arr){
-      if(!isNaN(temp)){
+    for (let temp of arr) {
+      if (!isNaN(temp)) {
         return true;
       }
     }
     return false;
-  }
-  const IsSpecialCaractor = (el)=>{
+  };
+  const IsSpecialCaractor = (el) => {
     const pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
-    if(pattern_spc.test(el)){
+    if (pattern_spc.test(el)) {
       return true;
     }
     return false;
-  } 
- 
+  };
+
+  const validator = (el, type) => {
+    const data = el;
+    const isEmpty = IsEmpty(data);
+    const isSpecialCaractor = IsSpecialCaractor(data);
+    const isNumber = IsNumber(data);
+    if (type === 'name') {
+      setNameEmpty(isEmpty);
+      setNameSpecial(isSpecialCaractor);
+      setNameNumber(isNumber);
+      if (isEmpty || isSpecialCaractor || isNumber) {
+        setNameValidatorStatus(false);
+      } else {
+        setNameValidatorStatus(true);
+        return true;
+      }
+    } else if (type === 'address') {
+      setAddressEmpty(isEmpty);
+      setAddressSpecial(isSpecialCaractor);
+      if (isEmpty || isSpecialCaractor) {
+        setAddressValidatorStatus(false);
+      } else {
+        setAddressValidatorStatus(true);
+        return true;
+      }
+    }
+  };
 
   const createCustomer = () => {
-    resetValidatorStates();
-    if(IsEmpty(name.trim())||IsEmpty(address.trim())){
-      setNameEmpty(IsEmpty(name.trim()));
-      setAddressEmpty(IsEmpty(address.trim()));
-    }else if(IsSpecialCaractor(name.trim())||IsSpecialCaractor(address.trim())){
-      setAddressSpecial(IsSpecialCaractor(address.trim()));
-      setNameSpecial(IsSpecialCaractor(name.trim()));
-    }else if(IsNumber(name.trim())){
-      setNameNumber(IsNumber(name.trim()));
-    }else{
-      console.log(nameEmpty +'&&'+ addressEmpty +'&&'+ nameSpecial +'&&'+ addressSpecial +'&&'+ nameNumber);
+    if (nameValidatorStatus && addressValidatorStatus) {
       if (modalFor === 'create') {
         axios
           .post('/customers/PostCustomer', {
@@ -94,17 +112,20 @@ const ModalForCustomerComponent = (props) => {
       }
       resetStates();
       resetValidatorStates();
+    } else {
+      validator(name, 'name');
+      validator(address, 'address');
     }
   };
 
   const setCustomerName = (e) => {
     setName(e);
-    setNameEmpty(false);
+    validator(e, 'name');
   };
 
   const setCustomerAddress = (e) => {
     setAddress(e);
-    setAddressEmpty(false);
+    validator(e, 'address');
   };
 
   const resetStates = () => {
@@ -117,8 +138,9 @@ const ModalForCustomerComponent = (props) => {
     setNameNumber(false);
     setAddressEmpty(false);
     setAddressSpecial(false);
+    setNameValidatorStatus(false);
+    setAddressValidatorStatus(false);
   };
-  
 
   return (
     <Modal open={open}>
@@ -132,7 +154,9 @@ const ModalForCustomerComponent = (props) => {
               value={name ? name : ''}
               onChange={(e) => setCustomerName(e.target.value)}
             />
-            <span className='validator'>{nameEmpty ? 'Please Enter Name' : ''}</span>
+            <span className='validator'>
+              {nameEmpty ? 'Please Enter Name' : ''}
+            </span>
             <span className='validator'>
               {nameSpecial ? 'Must not contain special characters' : ''}
             </span>
@@ -147,12 +171,24 @@ const ModalForCustomerComponent = (props) => {
               value={address ? address : ''}
               onChange={(e) => setCustomerAddress(e.target.value)}
             />
-            <span className='validator'>{addressEmpty ? 'Please Enter Address' : ''}</span>
+            <span className='validator'>
+              {addressEmpty ? 'Please Enter Address' : ''}
+            </span>
+            <span className='validator'>
+              {addressSpecial ? 'Must not contain special characters' : ''}
+            </span>
           </Form.Field>
         </Form>
       </Modal.Content>
       <Modal.Actions>
-        <Button color='black' onClick={() => {toggleCreateModal(false);resetStates(); resetValidatorStates();}}>
+        <Button
+          color='black'
+          onClick={() => {
+            toggleCreateModal(false);
+            resetStates();
+            resetValidatorStates();
+          }}
+        >
           Cancel
         </Button>
         <Button color='blue' onClick={() => createCustomer()}>

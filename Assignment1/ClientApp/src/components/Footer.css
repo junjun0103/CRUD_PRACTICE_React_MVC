@@ -9,8 +9,7 @@
   text-align: center;
 }
 
-.footer_links {
+.footer__container {
   margin: 10px;
   color: cadetblue;
-  cursor: pointer;
 }
