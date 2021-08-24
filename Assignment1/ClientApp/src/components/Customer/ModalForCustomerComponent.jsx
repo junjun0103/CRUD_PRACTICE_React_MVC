@@ -35,7 +35,7 @@ const ModalForCustomerComponent = (props) => {
   const IsNumber = (el) => {
     let arr = el.split('');
     for (let temp of arr) {
-      if (!isNaN(temp)) {
+      if (!isNaN(temp) && temp !== ' ') {
         return true;
       }
     }
